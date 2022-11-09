@@ -34,10 +34,15 @@
 			<version>${geotools.version}</version>
 		</dependency>
 		<dependency>
-    <groupId>com.bedatadriven</groupId>
-    <artifactId>jackson-datatype-jts</artifactId>
-    <version>2.4</version>
-</dependency>
+			<groupId>com.bedatadriven</groupId>
+			<artifactId>jackson-datatype-jts</artifactId>
+			<version>2.4</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>2.10</version>
+		</dependency>
 
 
 	</dependencies>
@@ -52,14 +57,14 @@
 			<releases>
 				<enabled>true</enabled>
 			</releases>
-		</repository>		
+		</repository>
 	</repositories>
-	
+
 	<build>
 		<finalName>evaluador</finalName>
-		<plugins>			
+		<plugins>
 
-			
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -69,7 +74,7 @@
 					<target>${jdk.version}</target>
 				</configuration>
 			</plugin>
-			
-			</plugins>
-			</build>
+
+		</plugins>
+	</build>
 </project>
