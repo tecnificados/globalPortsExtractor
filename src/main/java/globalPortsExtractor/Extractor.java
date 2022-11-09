@@ -14,13 +14,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -49,21 +47,19 @@ public class Extractor {
 	public static void main(String[] args) throws Exception {
 
 		List<Geometry> geometryPortsList = new ArrayList<Geometry>();
-		JSONArray portsList = new JSONArray();
-		JSONArray portsListInsideBodies = new JSONArray();
+		JsonArray portsList = new JsonArray();
+		JsonArray portsListInsideBodies = new JsonArray();
 
-		JSONArray ports = new JSONArray();
+		JsonArray ports = new JsonArray();
 		File dataFile = new File(portsFilePath);
 
-		System.out.println("Data file found: " + dataFile.exists());
-
-		JSONParser jsonParser = new JSONParser();
+		System.out.println("Data file found: " + dataFile.exists());	
 
 		try {
 			FileReader reader = new FileReader(portsFilePath);
-			Object obj = jsonParser.parse(reader);
-			JSONObject featuresData = (JSONObject) obj;
-			ports = (JSONArray) featuresData.get("features");
+			Object obj = JsonParser.parseReader(reader);
+			JsonObject featuresData = (JsonObject) obj;
+			ports = (JsonArray) featuresData.get("features");
 		} catch (Exception e) {
 			System.out.println("Error procesing file");
 		}
@@ -72,20 +68,18 @@ public class Extractor {
 
 		Map<String, Integer> portTypes = new HashMap<String, Integer>();
 		for (int i = 0; i < ports.size(); i++) {
-			JSONObject actualPort = (JSONObject) ports.get(i);
-			String portType = (String) ((JSONObject) actualPort.get("properties")).get("prttype");
-			JSONObject geometry = (JSONObject) actualPort.get("geometry");
-			JSONArray coordinates = (JSONArray) geometry.get("coordinates");
-			JSONObject properties = (JSONObject) actualPort.get("properties");
-			JSONObject customPoint = new JSONObject();
-			customPoint.put("type", "Point");
-			customPoint.put("coordinates", coordinates);
-			customPoint.put("properties", properties);
+			JsonObject actualPort = (JsonObject) ports.get(i);			
+			JsonObject properties = actualPort.getAsJsonObject("properties");
+			String portType = properties.get("prttype").toString();			
+			JsonObject geometry = (JsonObject) actualPort.get("geometry");
+			JsonArray coordinates = (JsonArray) geometry.get("coordinates");			
+			JsonObject customPoint = new JsonObject();
+			customPoint.addProperty ("type", "Point");
+			customPoint.add("coordinates", coordinates);
+			customPoint.add("properties", properties);
 			portsList.add(customPoint);
-
 			
-			System.out.println(customPoint.toJSONString());
-			Geometry actualGeometry = GeoToolUtils.generateGeometryFromGeojson(customPoint.toJSONString());
+			Geometry actualGeometry = GeoToolUtils.generateGeometryFromGeojson(customPoint.toString());
 			geometryPortsList.add(actualGeometry);
 
 			if (portTypes.containsKey(portType)) {
@@ -105,7 +99,6 @@ public class Extractor {
 		int counter = 0;
 		for (int i = 0; i < geometryPortsList.size(); i++) {
 			Geometry portGeometry = geometryPortsList.get(i);
-			double distance3 = geoWater.distance(portGeometry);
 			Coordinate[] nearestPoints = DistanceOp.nearestPoints(geoWater, portGeometry);
 			Coordinate c1 = nearestPoints[0];
 			Coordinate c2 = nearestPoints[1];
@@ -125,7 +118,7 @@ public class Extractor {
 		System.out.println("There are "+counter+" ports in big water bodies");
 		
 		
-		writeJSON(portsListInsideBodies.toJSONString(), jsonOutputPath);
+		writeJSON(portsListInsideBodies.toString(), jsonOutputPath);
 		
 		//TODO generate GeoJSON
 		
